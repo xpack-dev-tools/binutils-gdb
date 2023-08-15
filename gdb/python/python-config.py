@@ -3,6 +3,7 @@
 
 import sys
 import os
+import platform
 import getopt
 import sysconfig
 
@@ -49,10 +50,22 @@ def to_unix_path(path):
 
 for opt in opt_flags:
     if opt == "--prefix":
-        print(to_unix_path(os.path.normpath(sys.prefix)))
+        prefix=os.environ.get('CONFIG_PYTHON_PREFIX')
+        if prefix and prefix.strip():
+            sys.stderr.write ("%s -> [%s]\n" % (opt, prefix.strip()))
+            print (prefix.strip())
+        else:
+            sys.stderr.write ("%s -> [%s]\n" % (opt, to_unix_path(sysconfig.PREFIX)))
+            print (to_unix_path(sysconfig.PREFIX))
 
     elif opt == "--exec-prefix":
-        print(to_unix_path(os.path.normpath(sys.exec_prefix)))
+        prefix=os.environ.get('CONFIG_PYTHON_PREFIX')
+        if prefix and prefix.strip():
+            sys.stderr.write ("%s -> [%s]\n" % (opt, prefix.strip()))
+            print (prefix.strip())
+        else:
+            sys.stderr.write ("%s -> [%s]\n" % (opt, to_unix_path(sysconfig.EXEC_PREFIX)))
+            print (to_unix_path(sysconfig.EXEC_PREFIX))
 
     elif opt in ("--includes", "--cflags"):
         flags = [
@@ -61,6 +74,7 @@ for opt in opt_flags:
         ]
         if opt == "--cflags":
             flags.extend(getvar("CFLAGS").split())
+        sys.stderr.write ("%s -> [%s]\n" % (opt, to_unix_path(' '.join(flags))))
         print(to_unix_path(" ".join(flags)))
 
     elif opt in ("--libs", "--ldflags"):
@@ -79,4 +93,6 @@ for opt in opt_flags:
                     libs.insert(0, "-L" + os.path.normpath(sys.prefix) + "/libs")
             if getvar("LINKFORSHARED") is not None:
                 libs.extend(getvar("LINKFORSHARED").split())
-        print(to_unix_path(" ".join(libs)))
+        tmp = to_unix_path(' '.join(libs))
+        sys.stderr.write ("%s -> [%s]\n" % (opt, tmp))
+        print (tmp)
